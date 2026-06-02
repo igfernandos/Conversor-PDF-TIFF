@@ -84,34 +84,59 @@ with tab1:
 # ==========================================
 with tab2:
     st.header("Padronizador de Tabelas Ômicas")
-    st.write("Altere a estrutura das suas matrizes entre os formatos Largo (Wide) e Longo (Long) para facilitar análises e plotagem em R ou Python.")
+    st.write("Altere a estrutura das suas matrizes sem alterar nenhum valor original.")
     
     # ------------------------------------------
-    # EXEMPLOS VISUAIS PARA O USUÁRIO
+    # LÓGICA DE INVERSÃO (Estilo Tradutor)
     # ------------------------------------------
-    st.write("### 🔍 Identifique o formato atual da sua tabela:")
-    col_ex1, col_ex2 = st.columns(2)
-    with col_ex1:
-        st.info("""
-        **Formato Largo (Wide)**
-        Metabólitos nas colunas, amostras nas linhas (ou vice-versa). Padrão de exportação de softwares de RMN.
+    if 'modo_conversao' not in st.session_state:
+        st.session_state.modo_conversao = 'wide_to_long'
         
-        | Amostra | Acetato | Glicose |
-        | :--- | :--- | :--- |
-        | Animal_1 | 0.05 | 1.12 |
-        | Animal_2 | 0.03 | 1.84 |
-        """)
+    def inverter_modo():
+        if st.session_state.modo_conversao == 'wide_to_long':
+            st.session_state.modo_conversao = 'long_to_wide'
+        else:
+            st.session_state.modo_conversao = 'wide_to_long'
+
+    # Textos e visualizações das tabelas
+    exemplo_wide = """
+    **Formato Largo (Wide)**
+    | Amostra | Acetato | Glicose |
+    | :--- | :--- | :--- |
+    | Animal_1 | 0.05 | 1.12 |
+    | Animal_2 | 0.03 | 1.84 |
+    """
+    
+    exemplo_long = """
+    **Formato Longo (Long)**
+    | Amostra | Feature | Valor |
+    | :--- | :--- | :--- |
+    | Animal_1 | Acetato | 0.05 |
+    | Animal_1 | Glicose | 1.12 |
+    """
+
+    st.write("### 🔍 Escolha a direção da conversão:")
+    
+    # Layout das 3 colunas (Caixa 1 -> Botão Inverter -> Caixa 2)
+    col_origem, col_botao, col_destino = st.columns([3, 1, 3], vertical_alignment="center")
+    
+    with col_origem:
+        st.write("📥 **Sua tabela está assim:**")
+        if st.session_state.modo_conversao == 'wide_to_long':
+            st.info(exemplo_wide)
+        else:
+            st.info(exemplo_long)
+            
+    with col_botao:
+        # Botão central que chama a função de inverter
+        st.button("🔄 Inverter", on_click=inverter_modo, use_container_width=True)
         
-    with col_ex2:
-        st.info("""
-        **Formato Longo (Long)**
-        Cada linha é uma observação única. Padrão exigido por pacotes como ggplot2 e MOFA+.
-        
-        | Amostra | Feature | Valor |
-        | :--- | :--- | :--- |
-        | Animal_1 | Acetato | 0.05 |
-        | Animal_1 | Glicose | 1.12 |
-        """)
+    with col_destino:
+        st.write("📤 **Sua tabela ficará assim:**")
+        if st.session_state.modo_conversao == 'wide_to_long':
+            st.success(exemplo_long)
+        else:
+            st.success(exemplo_wide)
 
     # ------------------------------------------
     # UPLOAD E PROCESSAMENTO
@@ -120,62 +145,58 @@ with tab2:
     arquivo_csv = st.file_uploader("Suba sua tabela CSV", type=["csv"], key="csv_uploader")
     
     if arquivo_csv:
-        # Usamos sep=None para ler tanto CSVs separados por vírgula quanto por ponto-e-vírgula
         df = pd.read_csv(arquivo_csv, sep=None, engine='python') 
-        
         st.write("👀 **Prévia do arquivo carregado:**")
         st.dataframe(df.head(4))
         
-        # O usuário escolhe o fluxo
-        direcao = st.radio(
-            "O que você deseja fazer?",
-            ("🔄 Tenho Formato Largo ➡️ Quero transformar em Longo (Melt)", 
-             "🔄 Tenho Formato Longo ➡️ Quero transformar em Largo (Pivot)")
-        )
-        
-        if "Melt" in direcao:
-            st.write("#### Configuração: Wide para Long")
-            # Seleção múltipla para colunas de identificação
+        # --- FLUXO 1: WIDE PARA LONG ---
+        if st.session_state.modo_conversao == 'wide_to_long':
+            st.write("#### Configuração da Conversão")
             colunas_id = st.multiselect(
-                "Selecione a(s) coluna(s) de Identificação (ex: Sample, Label, Tecido) que NÃO vão virar linhas:", 
+                "Quais colunas identificam as amostras? (Elas NÃO vão virar linhas):", 
                 df.columns
             )
             
-            if st.button("Transformar para Longo"):
+            if st.button("Executar Conversão"):
                 if colunas_id:
                     try:
                         df_resultado = df.melt(id_vars=colunas_id, var_name="Feature", value_name="Valor")
-                        st.success("✅ Conversão concluída!")
+                        st.write("✅ **Sucesso! Tabela convertida:**")
                         st.dataframe(df_resultado.head(10))
                         
                         csv_final = df_resultado.to_csv(index=False).encode('utf-8')
-                        st.download_button("📥 Baixar CSV Longo", csv_final, "tabela_long.csv", "text/csv")
+                        st.download_button("📥 Baixar CSV (Long)", csv_final, "tabela_long.csv", "text/csv")
                     except Exception as e:
-                        st.error(f"Erro ao processar: {e}")
+                        st.error(f"Erro no processamento: {e}")
                 else:
-                    st.warning("⚠️ Selecione pelo menos uma coluna de identificação para continuar.")
+                    st.warning("⚠️ Selecione pelo menos uma coluna de identificação.")
                     
+        # --- FLUXO 2: LONG PARA WIDE ---
         else:
-            st.write("#### Configuração: Long para Wide")
-            # Seleção específica das colunas para reconstruir a tabela
-            coluna_index = st.selectbox("Qual coluna contém os Nomes das Amostras (ficarão nas linhas)?", df.columns, index=0)
-            coluna_colunas = st.selectbox("Qual coluna contém os Metabólitos/Features (virarão novas colunas)?", df.columns, index=1 if len(df.columns) > 1 else 0)
-            coluna_valores = st.selectbox("Qual coluna contém as intensidades/valores numéricos?", df.columns, index=2 if len(df.columns) > 2 else 0)
+            st.write("#### Configuração da Conversão")
+            coluna_index = st.selectbox("Qual coluna contém os Nomes das Amostras? (ficarão nas linhas)", df.columns, index=0)
+            coluna_colunas = st.selectbox("Qual coluna contém os Metabólitos/Features? (virarão o cabeçalho)", df.columns, index=1 if len(df.columns) > 1 else 0)
+            coluna_valores = st.selectbox("Qual coluna contém os Valores/Intensidades?", df.columns, index=2 if len(df.columns) > 2 else 0)
             
-            if st.button("Transformar para Largo"):
+            if st.button("Executar Conversão"):
                 try:
-                    # Usamos pivot_table com aggfunc='mean' para evitar erros caso existam valores duplicados acidentais para a mesma amostra/metabólito
-                    df_resultado = df.pivot_table(index=coluna_index, columns=coluna_colunas, values=coluna_valores, aggfunc='mean').reset_index()
-                    # Remove o nome da categoria das colunas para o CSV ficar mais limpo
+                    # Método estrito: pivot em vez de pivot_table. Falha se houver duplicatas.
+                    df_resultado = df.pivot(index=coluna_index, columns=coluna_colunas, values=coluna_valores).reset_index()
                     df_resultado.columns.name = None 
                     
-                    st.success("✅ Conversão concluída!")
+                    st.write("✅ **Sucesso! Tabela convertida:**")
                     st.dataframe(df_resultado.head(10))
                     
                     csv_final = df_resultado.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Baixar CSV Largo", csv_final, "tabela_wide.csv", "text/csv")
+                    st.download_button("📥 Baixar CSV (Wide)", csv_final, "tabela_wide.csv", "text/csv")
+                
+                except ValueError as e:
+                    if "duplicate" in str(e).lower():
+                        st.error("🚨 **Erro de Integridade de Dados:** Sua tabela possui entradas duplicadas (mais de um valor para a mesma amostra e metabólito). O formato Wide não suporta duplicatas sem aplicar médias matemáticas. Verifique seus dados brutos.")
+                    else:
+                        st.error(f"Erro na conversão: {e}")
                 except Exception as e:
-                    st.error(f"Erro ao organizar a tabela. Verifique se as colunas selecionadas estão corretas. Detalhe: {e}")
+                    st.error(f"Erro inesperado: {e}")
 
 # ==========================================
 # 5. ABA 3: CALCULADORA LOG2FC
