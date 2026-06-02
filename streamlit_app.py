@@ -79,13 +79,6 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro ao processar o PDF: {e}")
 
-Aqui está o bloco completo, corrigido e perfeito da **Aba 2**.
-
-Eu removi aquela validação antiga (que contava linhas e colunas) e coloquei a **validação inteligente por tipagem** (que calcula a proporção de texto na primeira linha). Também limpei a redundância da variável `coluna_pivo` para que a interface fique super limpa, mantendo a opção de seleção apenas por segurança, mas já puxando a primeira coluna automaticamente.
-
-Pode copiar e substituir todo o conteúdo da `with tab2:`:
-
-```python
 # ==========================================
 # 4. ABA 2: PADRONIZADOR DE TABELAS (OMICS)
 # ==========================================
@@ -210,8 +203,6 @@ with tab2:
                 
             except Exception as e:
                 st.error(f"Erro inesperado durante a transposição: {e}")
-
-```
 
 # ==========================================
 # 5. ABA 3: CALCULADORA LOG2FC
