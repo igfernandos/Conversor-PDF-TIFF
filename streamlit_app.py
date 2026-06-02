@@ -84,45 +84,98 @@ with tab1:
 # ==========================================
 with tab2:
     st.header("Padronizador de Tabelas Ômicas")
-    st.write("Converta matrizes de metabólitos para o formato 'Long' em 1 clique. Ideal para análises sistêmicas e integrações.")
+    st.write("Altere a estrutura das suas matrizes entre os formatos Largo (Wide) e Longo (Long) para facilitar análises e plotagem em R ou Python.")
     
+    # ------------------------------------------
+    # EXEMPLOS VISUAIS PARA O USUÁRIO
+    # ------------------------------------------
+    st.write("### 🔍 Identifique o formato atual da sua tabela:")
+    col_ex1, col_ex2 = st.columns(2)
+    with col_ex1:
+        st.info("""
+        **Formato Largo (Wide)**
+        Metabólitos nas colunas, amostras nas linhas (ou vice-versa). Padrão de exportação de softwares de RMN.
+        
+        | Amostra | Acetato | Glicose |
+        | :--- | :--- | :--- |
+        | Animal_1 | 0.05 | 1.12 |
+        | Animal_2 | 0.03 | 1.84 |
+        """)
+        
+    with col_ex2:
+        st.info("""
+        **Formato Longo (Long)**
+        Cada linha é uma observação única. Padrão exigido por pacotes como ggplot2 e MOFA+.
+        
+        | Amostra | Feature | Valor |
+        | :--- | :--- | :--- |
+        | Animal_1 | Acetato | 0.05 |
+        | Animal_1 | Glicose | 1.12 |
+        """)
+
+    # ------------------------------------------
+    # UPLOAD E PROCESSAMENTO
+    # ------------------------------------------
+    st.markdown("---")
     arquivo_csv = st.file_uploader("Suba sua tabela CSV", type=["csv"], key="csv_uploader")
     
     if arquivo_csv:
-        # Lê o CSV
+        # Usamos sep=None para ler tanto CSVs separados por vírgula quanto por ponto-e-vírgula
         df = pd.read_csv(arquivo_csv, sep=None, engine='python') 
         
-        st.write("👀 **Prévia do arquivo original:**")
-        st.dataframe(df.head())
+        st.write("👀 **Prévia do arquivo carregado:**")
+        st.dataframe(df.head(4))
         
-        formato = st.radio(
-            "Como os dados estão organizados na sua tabela?",
-            ("Metabólitos nas LINHAS (Ex: Coluna 1 = Acetate, Coluna 2 = PC1...)", 
-             "Amostras nas LINHAS (Ex: Colunas 1 e 2 = Sample/Label, Coluna 3 = Acetate...)")
+        # O usuário escolhe o fluxo
+        direcao = st.radio(
+            "O que você deseja fazer?",
+            ("🔄 Tenho Formato Largo ➡️ Quero transformar em Longo (Melt)", 
+             "🔄 Tenho Formato Longo ➡️ Quero transformar em Largo (Pivot)")
         )
         
-        if st.button("Padronizar Tabela"):
-            try:
-                if "Metabólitos nas LINHAS" in formato:
-                    # Formato 1: Pega a 1ª coluna como ID (ex: 'label')
-                    col_id = df.columns[0] 
-                    df_long = df.melt(id_vars=[col_id], var_name="Amostra", value_name="Valor")
-                    df_long.rename(columns={col_id: "Metabolito"}, inplace=True)
-                    
+        if "Melt" in direcao:
+            st.write("#### Configuração: Wide para Long")
+            # Seleção múltipla para colunas de identificação
+            colunas_id = st.multiselect(
+                "Selecione a(s) coluna(s) de Identificação (ex: Sample, Label, Tecido) que NÃO vão virar linhas:", 
+                df.columns
+            )
+            
+            if st.button("Transformar para Longo"):
+                if colunas_id:
+                    try:
+                        df_resultado = df.melt(id_vars=colunas_id, var_name="Feature", value_name="Valor")
+                        st.success("✅ Conversão concluída!")
+                        st.dataframe(df_resultado.head(10))
+                        
+                        csv_final = df_resultado.to_csv(index=False).encode('utf-8')
+                        st.download_button("📥 Baixar CSV Longo", csv_final, "tabela_long.csv", "text/csv")
+                    except Exception as e:
+                        st.error(f"Erro ao processar: {e}")
                 else:
-                    # Formato 2: Assume que as 2 primeiras colunas são Sample e Label
-                    colunas_id = list(df.columns[0:2])
-                    df_long = df.melt(id_vars=colunas_id, var_name="Metabolito", value_name="Valor")
-                    df_long.rename(columns={colunas_id[0]: "Amostra", colunas_id[1]: "Grupo"}, inplace=True)
-
-                st.write("✅ **Tabela Padronizada (Formato Long):**")
-                st.dataframe(df_long.head())
-                
-                csv_final = df_long.to_csv(index=False).encode('utf-8')
-                st.download_button("📥 Baixar CSV Padronizado", csv_final, "tabela_padronizada_long.csv", "text/csv")
-                
-            except Exception as e:
-                st.error(f"Erro ao padronizar. Verifique se a estrutura bate com a opção escolhida. Detalhe do erro: {e}")
+                    st.warning("⚠️ Selecione pelo menos uma coluna de identificação para continuar.")
+                    
+        else:
+            st.write("#### Configuração: Long para Wide")
+            # Seleção específica das colunas para reconstruir a tabela
+            coluna_index = st.selectbox("Qual coluna contém os Nomes das Amostras (ficarão nas linhas)?", df.columns, index=0)
+            coluna_colunas = st.selectbox("Qual coluna contém os Metabólitos/Features (virarão novas colunas)?", df.columns, index=1 if len(df.columns) > 1 else 0)
+            coluna_valores = st.selectbox("Qual coluna contém as intensidades/valores numéricos?", df.columns, index=2 if len(df.columns) > 2 else 0)
+            
+            if st.button("Transformar para Largo"):
+                try:
+                    # Usamos pivot_table com aggfunc='mean' para evitar erros caso existam valores duplicados acidentais para a mesma amostra/metabólito
+                    df_resultado = df.pivot_table(index=coluna_index, columns=coluna_colunas, values=coluna_valores, aggfunc='mean').reset_index()
+                    # Remove o nome da categoria das colunas para o CSV ficar mais limpo
+                    df_resultado.columns.name = None 
+                    
+                    st.success("✅ Conversão concluída!")
+                    st.dataframe(df_resultado.head(10))
+                    
+                    csv_final = df_resultado.to_csv(index=False).encode('utf-8')
+                    st.download_button("📥 Baixar CSV Largo", csv_final, "tabela_wide.csv", "text/csv")
+                except Exception as e:
+                    st.error(f"Erro ao organizar a tabela. Verifique se as colunas selecionadas estão corretas. Detalhe: {e}")
 
 # ==========================================
 # 5. ABA 3: CALCULADORA LOG2FC
