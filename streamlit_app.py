@@ -10,7 +10,26 @@ st.title("Conversor de PDF para TIFF (Alta Qualidade)")
 uploaded_file = st.file_uploader("Escolha seu PDF", type="pdf")
 
 # Configurações de DPI e Nitidez
-dpi = st.slider("Selecione o DPI", 300, 1200, 600)
+st.write("### Configurações de Qualidade")
+
+# Opções de clique (radio buttons)
+opcao_dpi = st.radio(
+    "Escolha o DPI padrão:",
+    (300, 600, 1200),
+    index=1, # O índice 1 é o 600
+    horizontal=True
+)
+
+# Opção de digitação (caso queiram algo específico)
+custom_dpi = st.number_input(
+    "Ou digite um valor personalizado:", 
+    min_value=72, 
+    max_value=2400, 
+    value=opcao_dpi
+)
+
+# O DPI que será usado no script:
+dpi = custom_dpi
 otimizar = st.checkbox("Aplicar filtros de nitidez", value=True)
 
 if uploaded_file is not None:
