@@ -159,11 +159,9 @@ with tab2:
         elif st.session_state.modo_conversao == 'long_to_wide' and colunas > linhas:
             st.warning(f"⚠️ **Aviso:** Você indicou que sua tabela está no formato **Longo (Long)**, mas ela possui mais colunas ({colunas}) do que linhas ({linhas}). Verifique o formato da sua tabela e a ordem da transposição na setinha acima!")
 
-        st.write("#### Configuração da Conversão")
         coluna_pivo = df.columns[0]
         
         st.write("#### Configuração da Conversão")
-        st.write("A conversão transporá a matriz inteira. Selecione qual coluna deve atuar como o 'eixo' (pivô) da transposição.")
         
         # O usuário escolhe a primeira coluna (que contém o nome das amostras ou o nome dos metabólitos)
         coluna_pivo = st.selectbox(
