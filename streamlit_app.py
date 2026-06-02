@@ -145,7 +145,7 @@ with tab2:
     
     if arquivo_csv:
         df = pd.read_csv(arquivo_csv, sep=None, engine='python') 
-        st.write("👀 **Prévia do arquivo carregado:**")
+        st.write("**Prévia do arquivo carregado:**")
         st.dataframe(df.head(5))
         
         st.write("#### Configuração da Conversão")
@@ -153,7 +153,7 @@ with tab2:
         
         # O usuário escolhe a primeira coluna (que contém o nome das amostras ou o nome dos metabólitos)
         coluna_pivo = st.selectbox(
-            "Qual coluna contém os Nomes (ex: Sample, Label, ou os nomes dos metabólitos)?", 
+            "Qual coluna contém os identificadores (ex: amostras)?", 
             df.columns, 
             index=0
         )
