@@ -173,7 +173,7 @@ with tab2:
                 df_resultado.rename(columns={'index': coluna_pivo}, inplace=True)
                 df_resultado.columns.name = None 
                 
-                st.write("✅ **Sucesso! Matriz transposta com integridade:**")
+                st.write("✅ **Sucesso! Matriz transposta:**")
                 st.dataframe(df_resultado.head(10))
                 
                 csv_final = df_resultado.to_csv(index=False).encode('utf-8')
