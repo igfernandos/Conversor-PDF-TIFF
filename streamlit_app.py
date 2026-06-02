@@ -147,6 +147,20 @@ with tab2:
         df = pd.read_csv(arquivo_csv, sep=None, engine='python') 
         st.write("**Prévia do arquivo carregado:**")
         st.dataframe(df.head(5))
+
+        # ------------------------------------------
+        # VALIDADOR INTELIGENTE DE FORMATO
+        # ------------------------------------------
+        linhas, colunas = df.shape
+        
+        if st.session_state.modo_conversao == 'wide_to_long' and linhas > colunas:
+            st.warning(f"⚠️ **Aviso:** Você indicou que sua tabela está no formato **Largo (Wide)**, mas ela possui mais linhas ({linhas}) do que colunas ({colunas}). Verifique o formato da sua tabela e a ordem da transposição na setinha acima!")
+            
+        elif st.session_state.modo_conversao == 'long_to_wide' and colunas > linhas:
+            st.warning(f"⚠️ **Aviso:** Você indicou que sua tabela está no formato **Longo (Long)**, mas ela possui mais colunas ({colunas}) do que linhas ({linhas}). Verifique o formato da sua tabela e a ordem da transposição na setinha acima!")
+
+        st.write("#### Configuração da Conversão")
+        coluna_pivo = df.columns[0]
         
         st.write("#### Configuração da Conversão")
         st.write("A conversão transporá a matriz inteira. Selecione qual coluna deve atuar como o 'eixo' (pivô) da transposição.")
