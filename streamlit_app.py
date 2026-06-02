@@ -81,6 +81,3 @@ with col1:
 with col2:
     st.write("### Apoie o projeto")
     st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
-
-# Botão do Buy Me a Coffee
-st.link_button("☕ Apoiar com um café", "https://www.buymeacoffee.com/seuusuario")
