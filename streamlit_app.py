@@ -61,11 +61,24 @@ if uploaded_file is not None:
             # Botão de download para o usuário
             with open(output_name, "rb") as f:
                 st.download_button(f"Baixar Página {i+1}", f, file_name=output_name)
-
+                
 # buy me a coffee
 st.markdown("---")
-st.write("### Gostou da ferramenta? Apoie o desenvolvimento!")
-st.write("Se este conversor te ajudou a economizar tempo com suas figuras, considere pagar um cafezinho.")
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    st.write("### Sobre o Projeto")
+    st.write("""
+    Como mestrando na UNICAMP, desenvolvi esta ferramenta para resolver um gargalo comum no dia a dia do laboratório: 
+    a necessidade de converter figuras complexas com qualidade de publicação sem depender de serviços pagos ou lentos.
+    
+    A ferramenta é **100% gratuita e de código aberto**. Se ela economizou o seu tempo de preparação de *papers* ou pôsteres, 
+    considere apoiar o desenvolvimento para que possamos continuar melhorando as funcionalidades.
+    """)
+
+with col2:
+    st.write("### Apoie o projeto")
+    st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
 
 # Botão do Buy Me a Coffee
 st.link_button("☕ Apoiar com um café", "https://www.buymeacoffee.com/seuusuario")
