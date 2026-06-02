@@ -153,7 +153,7 @@ with tab2:
         
         # O usuário escolhe a primeira coluna (que contém o nome das amostras ou o nome dos metabólitos)
         coluna_pivo = st.selectbox(
-            "Qual coluna contém os identificadores (ex: amostras)?", 
+            "Qual célula contém os identificadores (ex: amostras)?", 
             df.columns, 
             index=0
         )
