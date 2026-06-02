@@ -80,4 +80,13 @@ with col1:
 
 with col2:
     st.write("### Apoie o projeto")
-    st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
+    
+    # Criamos colunas dentro da col2 para alinhar a imagem e o botão
+    subcol1, subcol2 = st.columns([0.3, 1])
+    
+    with subcol1:
+        # Você pode trocar o link por um arquivo local se preferir
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/050/735/542/small_2x/a-black-cat-sitting-on-a-table-with-a-blue-cup-of-coffee-free-video.jpg", width=40)
+    
+    with subcol2:
+        st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
