@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 # 1. CONFIGURAÇÃO GERAL DA PÁGINA
 # ==========================================
 st.set_page_config(page_title="Ferramentas do Pesquisador", layout="wide", page_icon="🔬")
-st.title("Canivete Suíço do Pesquisador")
+st.title("Ferramentas")
 
 # ==========================================
 # 2. CRIAÇÃO DAS ABAS DE NAVEGAÇÃO
