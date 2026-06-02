@@ -79,6 +79,13 @@ with tab1:
             except Exception as e:
                 st.error(f"Erro ao processar o PDF: {e}")
 
+Aqui está o bloco completo, corrigido e perfeito da **Aba 2**.
+
+Eu removi aquela validação antiga (que contava linhas e colunas) e coloquei a **validação inteligente por tipagem** (que calcula a proporção de texto na primeira linha). Também limpei a redundância da variável `coluna_pivo` para que a interface fique super limpa, mantendo a opção de seleção apenas por segurança, mas já puxando a primeira coluna automaticamente.
+
+Pode copiar e substituir todo o conteúdo da `with tab2:`:
+
+```python
 # ==========================================
 # 4. ABA 2: PADRONIZADOR DE TABELAS (OMICS)
 # ==========================================
@@ -149,23 +156,32 @@ with tab2:
         st.dataframe(df.head(5))
 
         # ------------------------------------------
-        # VALIDADOR INTELIGENTE DE FORMATO
+        # VALIDADOR INTELIGENTE DE FORMATO (Tipagem)
         # ------------------------------------------
-        linhas, colunas = df.shape
-        
-        if st.session_state.modo_conversao == 'wide_to_long' and linhas > colunas:
-            st.warning(f"⚠️ **Aviso:** Você indicou que sua tabela está no formato **Largo (Wide)**, mas ela possui mais linhas ({linhas}) do que colunas ({colunas}). Verifique o formato da sua tabela e a ordem da transposição na setinha acima!")
+        try:
+            # Pega a linha 0, da coluna 1 em diante
+            primeira_linha = df.iloc[0, 1:]
             
-        elif st.session_state.modo_conversao == 'long_to_wide' and colunas > linhas:
-            st.warning(f"⚠️ **Aviso:** Você indicou que sua tabela está no formato **Longo (Long)**, mas ela possui mais colunas ({colunas}) do que linhas ({linhas}). Verifique o formato da sua tabela e a ordem da transposição na setinha acima!")
+            # Conta quantos valores na linha são strings (textos)
+            qtd_textos = primeira_linha.apply(lambda x: isinstance(x, str)).sum()
+            proporcao_texto = qtd_textos / len(primeira_linha)
+            
+            # Se mais de 50% for texto, é a linha de 'Label' cruzando a tabela (Long)
+            if st.session_state.modo_conversao == 'wide_to_long' and proporcao_texto > 0.5:
+                st.warning("⚠️ **Aviso:** Detectamos majoritariamente textos na primeira linha de dados (provável linha de 'Label' ou 'Grupo'). Isso indica que sua tabela já está no formato **Longo** (transposta). Verifique a direção da conversão na setinha acima!")
+                
+            # Se for quase tudo número, é o formato Largo tradicional
+            elif st.session_state.modo_conversao == 'long_to_wide' and proporcao_texto < 0.5:
+                st.warning("⚠️ **Aviso:** A primeira linha de dados contém majoritariamente números, o que é característico do formato **Largo (Wide)**. Verifique a direção da conversão na setinha acima!")
+        except Exception:
+            pass # Silencioso em caso de tabelas anômalas
 
-        coluna_pivo = df.columns[0]
-        
         st.write("#### Configuração da Conversão")
         
         # O usuário escolhe a primeira coluna (que contém o nome das amostras ou o nome dos metabólitos)
+        # O padrão (index=0) já deixa a primeira coluna pré-selecionada, funcionando automaticamente na maioria dos casos.
         coluna_pivo = st.selectbox(
-            "Qual célula contém os identificadores (ex: amostras)?", 
+            "Qual coluna contém os identificadores/nomes (ex: Sample)?", 
             df.columns, 
             index=0
         )
@@ -194,6 +210,8 @@ with tab2:
                 
             except Exception as e:
                 st.error(f"Erro inesperado durante a transposição: {e}")
+
+```
 
 # ==========================================
 # 5. ABA 3: CALCULADORA LOG2FC
