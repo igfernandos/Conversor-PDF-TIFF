@@ -87,7 +87,7 @@ with col2:
     with subcol1:
         # O parâmetro use_container_width=True e a ausência de links internos 
         # impedem o comportamento de clique/zoom em navegadores modernos
-        st.image("https://static.vecteezy.com/system/resources/thumbnails/050/735/542/small_2x/a-black-cat-sitting-on-a-table-with-a-blue-cup-of-coffee-free-video.jpg", width=80)
+        st.image("https://static.vecteezy.com/system/resources/thumbnails/050/735/542/small_2x/a-black-cat-sitting-on-a-table-with-a-blue-cup-of-coffee-free-video.jpg", width=100)
     
     with subcol2:
         st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
