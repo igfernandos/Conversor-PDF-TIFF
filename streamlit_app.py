@@ -84,10 +84,10 @@ with tab1:
 # ==========================================
 with tab2:
     st.header("Padronizador de Tabelas Ômicas")
-    st.write("Altere a estrutura das suas matrizes sem alterar nenhum valor original.")
+    st.write("Inverta a orientação da sua matriz (Transposição) para adequar aos padrões do MetaboAnalyst, MOFA+ ou scripts de R.")
     
     # ------------------------------------------
-    # LÓGICA DE INVERSÃO (Estilo Tradutor)
+    # LÓGICA DE INVERSÃO VISUAL
     # ------------------------------------------
     if 'modo_conversao' not in st.session_state:
         st.session_state.modo_conversao = 'wide_to_long'
@@ -98,26 +98,26 @@ with tab2:
         else:
             st.session_state.modo_conversao = 'wide_to_long'
 
-    # Textos e visualizações das tabelas
+    # Textos e visualizações com o formato real da Metabolômica
     exemplo_wide = """
-    **Formato Largo (Wide)**
-    | Amostra | Acetato | Glicose |
-    | :--- | :--- | :--- |
-    | Animal_1 | 0.05 | 1.12 |
-    | Animal_2 | 0.03 | 1.84 |
+    **Amostras nas Linhas (Wide)**
+    | Sample | Label | Metabólito_1 | Metabólito_2 |
+    | :--- | :--- | :--- | :--- |
+    | Amostra_1 | Grupo_1 | 0.050 | 1.120 |
+    | Amostra_2 | Grupo_1 | 0.030 | 1.840 |
     """
     
     exemplo_long = """
-    **Formato Longo (Long)**
-    | Amostra | Feature | Valor |
+    **Metabólitos nas Linhas (Long)**
+    | Sample | Amostra_1 | Amostra_2 |
     | :--- | :--- | :--- |
-    | Animal_1 | Acetato | 0.05 |
-    | Animal_1 | Glicose | 1.12 |
+    | **Label** | Grupo_1 | Grupo_1 |
+    | **Metabólito_1** | 0.050 | 0.030 |
+    | **Metabólito_2** | 1.120 | 1.840 |
     """
 
     st.write("### 🔍 Escolha a direção da conversão:")
     
-    # Layout das 3 colunas (Caixa 1 -> Botão Inverter -> Caixa 2)
     col_origem, col_botao, col_destino = st.columns([3, 1, 3], vertical_alignment="center")
     
     with col_origem:
@@ -128,7 +128,6 @@ with tab2:
             st.info(exemplo_long)
             
     with col_botao:
-        # Botão central que chama a função de inverter
         st.button("🔄 Inverter", on_click=inverter_modo, use_container_width=True)
         
     with col_destino:
@@ -147,56 +146,42 @@ with tab2:
     if arquivo_csv:
         df = pd.read_csv(arquivo_csv, sep=None, engine='python') 
         st.write("👀 **Prévia do arquivo carregado:**")
-        st.dataframe(df.head(4))
+        st.dataframe(df.head(5))
         
-        # --- FLUXO 1: WIDE PARA LONG ---
-        if st.session_state.modo_conversao == 'wide_to_long':
-            st.write("#### Configuração da Conversão")
-            colunas_id = st.multiselect(
-                "Quais colunas identificam as amostras? (Elas NÃO vão virar linhas):", 
-                df.columns
-            )
-            
-            if st.button("Executar Conversão"):
-                if colunas_id:
-                    try:
-                        df_resultado = df.melt(id_vars=colunas_id, var_name="Feature", value_name="Valor")
-                        st.write("✅ **Sucesso! Tabela convertida:**")
-                        st.dataframe(df_resultado.head(10))
-                        
-                        csv_final = df_resultado.to_csv(index=False).encode('utf-8')
-                        st.download_button("📥 Baixar CSV (Long)", csv_final, "tabela_long.csv", "text/csv")
-                    except Exception as e:
-                        st.error(f"Erro no processamento: {e}")
-                else:
-                    st.warning("⚠️ Selecione pelo menos uma coluna de identificação.")
-                    
-        # --- FLUXO 2: LONG PARA WIDE ---
-        else:
-            st.write("#### Configuração da Conversão")
-            coluna_index = st.selectbox("Qual coluna contém os Nomes das Amostras? (ficarão nas linhas)", df.columns, index=0)
-            coluna_colunas = st.selectbox("Qual coluna contém os Metabólitos/Features? (virarão o cabeçalho)", df.columns, index=1 if len(df.columns) > 1 else 0)
-            coluna_valores = st.selectbox("Qual coluna contém os Valores/Intensidades?", df.columns, index=2 if len(df.columns) > 2 else 0)
-            
-            if st.button("Executar Conversão"):
-                try:
-                    # Método estrito: pivot em vez de pivot_table. Falha se houver duplicatas.
-                    df_resultado = df.pivot(index=coluna_index, columns=coluna_colunas, values=coluna_valores).reset_index()
-                    df_resultado.columns.name = None 
-                    
-                    st.write("✅ **Sucesso! Tabela convertida:**")
-                    st.dataframe(df_resultado.head(10))
-                    
-                    csv_final = df_resultado.to_csv(index=False).encode('utf-8')
-                    st.download_button("📥 Baixar CSV (Wide)", csv_final, "tabela_wide.csv", "text/csv")
+        st.write("#### Configuração da Conversão")
+        st.write("A conversão transporá a matriz inteira. Selecione qual coluna deve atuar como o 'eixo' (pivô) da transposição.")
+        
+        # O usuário escolhe a primeira coluna (que contém o nome das amostras ou o nome dos metabólitos)
+        coluna_pivo = st.selectbox(
+            "Qual coluna contém os Nomes (ex: Sample, Label, ou os nomes dos metabólitos)?", 
+            df.columns, 
+            index=0
+        )
+        
+        if st.button("Executar Transposição", type="primary"):
+            try:
+                # 1. Define a coluna escolhida como o índice real da tabela
+                df_temp = df.set_index(coluna_pivo)
                 
-                except ValueError as e:
-                    if "duplicate" in str(e).lower():
-                        st.error("🚨 **Erro de Integridade de Dados:** Sua tabela possui entradas duplicadas (mais de um valor para a mesma amostra e metabólito). O formato Wide não suporta duplicatas sem aplicar médias matemáticas. Verifique seus dados brutos.")
-                    else:
-                        st.error(f"Erro na conversão: {e}")
-                except Exception as e:
-                    st.error(f"Erro inesperado: {e}")
+                # 2. Faz a transposição exata da matriz (tomba a tabela)
+                df_transposto = df_temp.T
+                
+                # 3. Restaura o formato tabular (tira o índice para voltar a ser coluna)
+                df_resultado = df_transposto.reset_index()
+                
+                # 4. Renomeia a nova primeira coluna para manter o mesmo nome original
+                df_resultado.rename(columns={'index': coluna_pivo}, inplace=True)
+                df_resultado.columns.name = None 
+                
+                st.write("✅ **Sucesso! Matriz transposta com integridade:**")
+                st.dataframe(df_resultado.head(10))
+                
+                csv_final = df_resultado.to_csv(index=False).encode('utf-8')
+                nome_arquivo = "tabela_long.csv" if st.session_state.modo_conversao == 'wide_to_long' else "tabela_wide.csv"
+                st.download_button(f"📥 Baixar CSV Transposto", csv_final, nome_arquivo, "text/csv")
+                
+            except Exception as e:
+                st.error(f"Erro inesperado durante a transposição: {e}")
 
 # ==========================================
 # 5. ABA 3: CALCULADORA LOG2FC
