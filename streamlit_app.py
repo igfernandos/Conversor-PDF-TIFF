@@ -4,7 +4,7 @@ from PIL import Image, ImageFilter
 
 # Configuração da página
 st.set_page_config(page_title="Conversor PDF para TIFF", page_icon="📄")
-st.title("Conversor de PDF para TIFF (Alta Qualidade)")
+st.title("Conversor de PDF para TIFF")
 
 # Upload do arquivo
 uploaded_file = st.file_uploader("Escolha seu PDF", type="pdf")
