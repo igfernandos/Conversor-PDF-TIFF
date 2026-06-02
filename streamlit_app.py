@@ -6,11 +6,11 @@ from PIL import Image, ImageFilter
 st.set_page_config(page_title="Conversor PDF para TIFF", page_icon="📄")
 st.title("Conversor de PDF para TIFF")
 st.info("""
-**Por que esta ferramenta é ideal para figuras científicas?**
-Diferente de conversores online genéricos, este script foi desenvolvido especificamente para o fluxo acadêmico:
+**Esta é a ferramenta ideal para figuras científicas:**
 - **Preservação de Integridade:** Utilizamos compressão *Lossless* (LZW) que não degrada a qualidade das bandas ou gráficos.
 - **Renderização de Precisão:** Mantemos a fidelidade vetorial dos PDFs, garantindo nitidez absoluta em 600 ou 1200 DPI.
-- **Segurança de Dados:** O processamento ocorre localmente ou via memória volátil, mantendo o sigilo e a integridade de seus dados experimentais.
+- **Otimização de Detalhes:** Incluímos um filtro inteligente de nitidez (*Sharpen*) que reforça as bordas de elementos gráficos complexos.
+- **Seus dados estão seguros:** O processamento ocorre localmente ou via memória volátil, não temos acesso algum ao seu material.
 """)
 
 # Upload do arquivo
@@ -69,11 +69,13 @@ col1, col2 = st.columns([2, 1])
 with col1:
     st.write("### Sobre o Projeto")
     st.write("""
-    Como mestrando na UNICAMP, desenvolvi esta ferramenta para resolver um gargalo comum no dia a dia do laboratório: 
-    a necessidade de converter figuras complexas com qualidade de publicação sem depender de serviços pagos ou lentos.
+    Cansado de receber *feedback* de revisores pedindo figuras com mais resolução? 
+    Desenvolvi este conversor para que pesquisadores não percam tempo com conversores genéricos que demoram muito e com limitações de uso. 
     
-    A ferramenta é **100% gratuita e de código aberto**. Se ela economizou o seu tempo de preparação de *papers* ou pôsteres, 
-    considere apoiar o desenvolvimento para que possamos continuar melhorando as funcionalidades.
+    Aqui, você converte quantos arquivos quiser para **qualidade de publicação** de forma gratuita, rápida e, principalmente, mantendo a integridade científica dos seus dados.
+    
+    Se essa ferramenta economizou o seu tempo, considere apoiar o desenvolvimento de novas funcionalidades.
+    Feito por um pesquisador para outros pesquisadores :) 
     """)
 
 with col2:
