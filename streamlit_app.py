@@ -90,4 +90,4 @@ with col2:
         st.image("https://static.vecteezy.com/system/resources/thumbnails/050/735/542/small_2x/a-black-cat-sitting-on-a-table-with-a-blue-cup-of-coffee-free-video.jpg", width=100)
     
     with subcol2:
-        st.link_button("☕ Pagar um café", "https://www.buymeacoffee.com/seuusuario")
+        st.link_button("☕ Pagar um café", "https://buymeacoffee.com/igorfernandost")
