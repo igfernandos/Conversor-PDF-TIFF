@@ -6,8 +6,8 @@ from PIL import Image, ImageFilter
 # ==========================================
 # 1. CONFIGURAÇÃO GERAL DA PÁGINA
 # ==========================================
-st.set_page_config(page_title="Ferramentas úteis", layout="wide", page_icon="🔬")
-st.title("Ferramentas úteis")
+st.set_page_config(page_title="ScienceToolbox", layout="wide", page_icon="🔬")
+st.title("Escolha uma das ferramentas úteis abaixo:")
 
 # ==========================================
 # 2. CRIAÇÃO DAS ABAS DE NAVEGAÇÃO
