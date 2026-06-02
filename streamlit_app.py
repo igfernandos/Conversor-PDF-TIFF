@@ -54,3 +54,11 @@ if uploaded_file is not None:
             # Botão de download para o usuário
             with open(output_name, "rb") as f:
                 st.download_button(f"Baixar Página {i+1}", f, file_name=output_name)
+
+# buy me a coffee
+st.markdown("---")
+st.write("### Gostou da ferramenta? Apoie o desenvolvimento!")
+st.write("Se este conversor te ajudou a economizar tempo com suas figuras, considere pagar um cafezinho.")
+
+# Botão do Buy Me a Coffee
+st.link_button("☕ Apoiar com um café", "https://www.buymeacoffee.com/seuusuario")
