@@ -5,6 +5,13 @@ from PIL import Image, ImageFilter
 # Configuração da página
 st.set_page_config(page_title="Conversor PDF para TIFF", page_icon="📄")
 st.title("Conversor de PDF para TIFF")
+st.info("""
+**Por que esta ferramenta é ideal para figuras científicas?**
+Diferente de conversores online genéricos, este script foi desenvolvido especificamente para o fluxo acadêmico:
+- **Preservação de Integridade:** Utilizamos compressão *Lossless* (LZW) que não degrada a qualidade das bandas ou gráficos.
+- **Renderização de Precisão:** Mantemos a fidelidade vetorial dos PDFs, garantindo nitidez absoluta em 600 ou 1200 DPI.
+- **Segurança de Dados:** O processamento ocorre localmente ou via memória volátil, mantendo o sigilo e a integridade de seus dados experimentais.
+""")
 
 # Upload do arquivo
 uploaded_file = st.file_uploader("Escolha seu PDF", type="pdf")
