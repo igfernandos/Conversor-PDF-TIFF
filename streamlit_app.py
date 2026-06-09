@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import pymupdf
 from PIL import Image, ImageFilter
+import qrcode
+from io import BytesIO
 
 # ==========================================
 # 1. CONFIGURAÇÃO GERAL DA PÁGINA
@@ -12,7 +14,7 @@ st.title("ScienceToolbox")
 # ==========================================
 # 2. CRIAÇÃO DAS ABAS DE NAVEGAÇÃO
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["📄 Conversor PDF", "📊 Padronizador de Tabelas", "🧮 Calculadora Log2FC"])
+tab1, tab2, tab3, tab4 = st.tabs(["📄 Conversor PDF", "📊 Padronizador de Tabelas", "🧮 Calculadora Log2FC", "📱 Gerador QR Code"])
 
 # ==========================================
 # 3. ABA 1: CONVERSOR DE PDF
@@ -212,7 +214,50 @@ with tab3:
     st.info("Ferramenta em desenvolvimento. Em breve você poderá calcular Fold Changes rapidamente aqui.")
 
 # ==========================================
-# 6. RODAPÉ (APOIE O PROJETO)
+# 6. ABA 4: GERADOR DE QR CODE
+# ==========================================
+with tab4:
+    st.header("Gerador de QR Code")
+    st.write("Crie QR Codes rapidamente para pôsteres de congresso, apresentações de slides ou links de artigos científicos.")
+    
+    link_input = st.text_input("Digite o Link (URL) ou Texto:")
+    
+    if st.button("Gerar QR Code", type="primary"):
+        if link_input:
+            try:
+                # Geração do QR Code
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=qrcode.constants.ERROR_CORRECT_H,
+                    box_size=10,
+                    border=4,
+                )
+                qr.add_data(link_input)
+                qr.make(fit=True)
+                
+                img_qr = qr.make_image(fill_color="black", back_color="white")
+                
+                # Salva a imagem em memória para exibir e baixar
+                buf = BytesIO()
+                img_qr.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                
+                col_img, col_vazia = st.columns([1, 2])
+                with col_img:
+                    st.image(byte_im, caption="Seu QR Code gerado com sucesso!")
+                    st.download_button(
+                        label="📥 Baixar Imagem (PNG)",
+                        data=byte_im,
+                        file_name="qrcode_science_toolbox.png",
+                        mime="image/png"
+                    )
+            except Exception as e:
+                st.error(f"Erro ao gerar o QR Code: {e}")
+        else:
+            st.warning("⚠️ Por favor, insira um link ou texto no campo acima.")
+
+# ==========================================
+# 7. RODAPÉ (APOIE O PROJETO)
 # ==========================================
 st.markdown("---")
 col1, col2 = st.columns([2, 1])
