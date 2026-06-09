@@ -1,3 +1,6 @@
+streamlit
 pymupdf
 Pillow
-streamlit
+pandas
+openpyxl
+qrcode
